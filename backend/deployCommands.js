@@ -6,47 +6,52 @@ require('dotenv').config();
 const token = process.env.DISCORD_TOKEN;
 const clientID = process.env.DISCORD_CLIENT_ID;
 const guildID = process.env.DISCORD_GUILD_ID;
+
 const { REST, Routes } = require('discord.js');
 const fs = require('node:fs');
+const path = require('node:path');
 
 const commands = [];
 
-// Get all commands from the commands folder
+// Resolve the absolute path to the commands folder
+const commandsPath = path.join(__dirname, '../commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-console.log(commandFiles);
+console.log('Loading command files:', commandFiles);
 
 for (const file of commandFiles) {
-    const command = require(`../commands/${file}`);
-    commands.push(command.data.toJSON());
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+
+    if ('data' in command && 'execute' in command) {
+        commands.push(command.data.toJSON());
+    } else {
+        console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+    }
 }
 
 const rest = new REST({ version: '10' }).setToken(token);
 
-// console.log(commands);
-
 (async () => {
     try {
-        const rest = new REST({ version: '10' }).setToken(token);
-        
-        console.log('Started refreshing application (/) commands.');
+        console.log('Started refreshing application (/) commands...');
 
-        //publish to guild if guildID is set, otherwise publish to global
+        let data;
         if (guildID) {
-            const data = await rest.put(
+            data = await rest.put(
                 Routes.applicationGuildCommands(clientID, guildID),
                 { body: commands },
             );
-            console.log('Successfully reloaded '+ data.length +' commands.');
+            console.log(`Successfully reloaded ${data.length} guild command(s).`);
         } else {
-            const data = await rest.put(
+            data = await rest.put(
                 Routes.applicationCommands(clientID),
                 { body: commands },
             );
-            console.log('Successfully reloaded '+ data.length +' commands.');
+            console.log(`Successfully reloaded ${data.length} global command(s).`);
         }
 
     } catch (error) {
-        console.error(error);
+        console.error('Error during command deployment:', error);
     }
 })();
