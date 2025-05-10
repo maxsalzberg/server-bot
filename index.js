@@ -3,7 +3,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const token = process.env.DISCORD_TOKEN;
 const clientID = process.env.DISCORD_CLIENT_ID;
-const allowedChannelId = process.env.ALLOWED_CHANNEL_ID;
 
 // Require the necessary discord.js classes
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
@@ -55,11 +54,6 @@ console.log(`Invite link: ${inviteLink}`);
 // Execute on slash command
 client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
-        // Check if the interaction is in the allowed channel
-        if (interaction.channelId !== allowedChannelId) {
-            return interaction.reply({ content: 'This command can only be used in the specified channel!', ephemeral: true });
-        }
-
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
