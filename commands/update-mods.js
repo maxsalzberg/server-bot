@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
-const { Docker } = require('node-docker-api'); // Using Docker API library to interact with Docker
+const restartCommand = require('./restart'); // Импортируем команду перезапуска
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,31 +28,16 @@ module.exports = {
         // Write the updated content back to the file
         fs.writeFileSync(filePath, updatedYaml, 'utf8');
 
-        // Create a Docker client to interact with Docker via the socket
-        const docker = new Docker({ socketPath: '/var/run/docker.sock' });
-
         try {
             // Reply to the user confirming the mod list update
             await interaction.reply(`Mod list updated: ${mods}. The server is restarting...`);
 
-            // Get the list of containers, filtered by name
-            const containers = await docker.container.list({ all: true, filters: { name: ['tonylife-bot'] } });
-
-            // If the container doesn't exist, send a follow-up error message
-            if (containers.length === 0) {
-                await interaction.followUp('Container "tonylife-bot" does not exist.');
-                throw new Error('Container "tonylife-bot" does not exist.');
-            }
-
-            // Restart the container
-            await containers[0].restart();
-
-            // Confirm that the container was successfully restarted
-            await interaction.followUp('The server has been successfully restarted.');
+            // Call the restart container command (using the imported execute function)
+            await restartCommand.execute(interaction);
         } catch (error) {
             // Handle error and inform the user
             console.error(error);
-            await interaction.followUp(`An error occurred while trying to restart the container: ${error.message}`);
+            await interaction.followUp(`An error occurred while updating mods: ${error.message}`);
         }
     },
 };
