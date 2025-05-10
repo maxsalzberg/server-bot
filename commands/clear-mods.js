@@ -23,7 +23,7 @@ module.exports = {
         fs.writeFileSync(filePath, updatedYaml, 'utf8');
         
         // Restart the Docker container to apply the changes
-        exec('docker-compose -f /home/squadserver/docker-compose.yml restart', (error, stdout, stderr) => {
+        exec('docker compose -f /home/squadserver/docker-compose.yml restart', (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;
