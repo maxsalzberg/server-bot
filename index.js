@@ -8,7 +8,7 @@ const clientID = process.env.DISCORD_CLIENT_ID;
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 //run backend/deployCommands.js
 const { exec } = require('child_process');
@@ -22,9 +22,11 @@ exec('node backend/deployCommands.js', (err, stdout, stderr) => {
     }
 });
 
+
+
 // When the client is ready, run this code
 client.once(Events.ClientReady, c => {
-    console.log(`Ready! Logged in as ${c.user.tag}`);
+	console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
 // Log in to Discord with your client's token
@@ -46,33 +48,33 @@ for (const file of commandFiles) {
         console.log(`Command ${file} is missing 'data' or 'execute'`);
     }
 }
-
-// Build and display invite link
+//build and display invite link
 const inviteLink = 'https://discord.com/oauth2/authorize?client_id='+clientID+'&permissions=2147534912&scope=bot%20applications.commands';
+
 console.log(`Invite link: ${inviteLink}`);
 
-// Execute on slash command
+// execute on slash command
 client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
-            console.error(`No command matching ${interaction.commandName} was found.`);
+            console.error('No command matching ${interaction.commandName} was found.');
             return;
         }
 
         try {
-            console.log(`Executing command: ${interaction.commandName} by ${interaction.user.tag}`);
             await command.execute(interaction);
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            // await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     } else if (interaction.isAutocomplete()) {
+
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
-            console.error(`No command matching ${interaction.commandName} was found.`);
+            console.error('No command matching ${interaction.commandName} was found.');
             return;
         }
 
@@ -80,7 +82,7 @@ client.on(Events.InteractionCreate, async interaction => {
             await command.autocomplete(interaction);
         } catch (error) {
             console.error(error);
-            // Optionally reply to the user about autocomplete error
+            // await interaction.({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     }
 });
