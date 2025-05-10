@@ -10,19 +10,6 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Run backend/deployCommands.js
-const { exec } = require('child_process');
-exec('node backend/deployCommands.js', (err, stdout, stderr) => {
-    if (err) {
-        console.error('Error during deploy:', err);
-    } else {
-        console.log('Deploy output:', stdout);
-        if (stderr) {
-            console.error('Deploy stderr:', stderr);
-        }
-    }
-});
-
 // When the client is ready, run this code
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
