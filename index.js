@@ -8,7 +8,7 @@ const clientID = process.env.DISCORD_CLIENT_ID;
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 // When the client is ready, run this code
 client.once(Events.ClientReady, c => {
@@ -39,9 +39,17 @@ for (const file of commandFiles) {
 const inviteLink = 'https://discord.com/oauth2/authorize?client_id='+clientID+'&permissions=2147534912&scope=bot%20applications.commands';
 console.log(`Invite link: ${inviteLink}`);
 
+// Get the allowed channel ID from environment variables
+const allowedChannelId = process.env.ALLOWED_CHANNEL_ID;
+
 // Execute on slash command
 client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
+        // Check if the interaction is in the allowed channel
+        if (interaction.channelId !== allowedChannelId) {
+            return interaction.reply({ content: 'This command can only be used in a specific channel!', ephemeral: true });
+        }
+
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
@@ -57,7 +65,6 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     } else if (interaction.isAutocomplete()) {
-
         const command = client.commands.get(interaction.commandName);
 
         if (!command) {
