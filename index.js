@@ -57,7 +57,7 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.isChatInputCommand()) {
         // Check if the interaction is in the allowed channel
         if (interaction.channelId !== allowedChannelId) {
-            return interaction.reply({ content: 'This command can only be used in a specific channel!', ephemeral: true });
+            return interaction.reply({ content: 'This command can only be used in the specified channel!', ephemeral: true });
         }
 
         const command = client.commands.get(interaction.commandName);
